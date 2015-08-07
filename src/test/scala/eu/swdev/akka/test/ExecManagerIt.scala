@@ -1,16 +1,22 @@
 package eu.swdev.akka.test
 
+import akka.actor.{Props, ActorRef, ActorSystem}
 import akka.event.Logging
-import akka.testkit.TestProbe
+import akka.testkit.{ImplicitSender, TestKit, TestProbe}
+import com.typesafe.config.ConfigFactory
 import eu.swdev.akka.test.ExecManager.{ContinueMsg, RegisterMsg}
+import org.junit.runner.RunWith
+import org.scalatest.junit.JUnitRunner
+import org.scalatest.{BeforeAndAfterAll, FunSuiteLike}
 
 import scala.concurrent.duration._
 
-class ExecManagerIt extends ActorItBase(
-  _.withValue("instBackend.timeoutCheckPeriodMillis", 100l),
-  _.withValue("akka.loglevel", "DEBUG"),
-  _.withValue("akka.actor.debug.lifecycle", "on")
-) {
+@RunWith(classOf[JUnitRunner])
+class ExecManagerIt extends TestKit(ActorSystem("test", ConfigFactory.load())) with FunSuiteLike
+with BeforeAndAfterAll
+with ImplicitSender  {
+
+  val execHandler: ActorRef = system.actorOf(Props[ExecManager], "execManager")
 
   test("a timed out execution") {
 
@@ -50,13 +56,9 @@ class ExecManagerIt extends ActorItBase(
 
         log.debug("waited for ContinueMsg")
 
-        //assert(execCtx === continueMsg.execCtx)
-        // the ContinuationMsg must contain a failure; it should have timed out
         assert(continueMsg.result === "timeout")
         assert(execId === continueMsg.execId)
 
-//        execHandler ! ExecManager.COUNT_MSG
-//        expectMsg(Result.success(0l))
       } finally {
         val as = system.actorSelection(nextActorPathString)
         as.resolveOne(1 seconds).onComplete {
