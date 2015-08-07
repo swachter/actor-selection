@@ -87,8 +87,7 @@ public class ExecManager extends BaseActor {
 
   private final MongoCollection<Document> pendingExecutions;
 
-  public ExecManager(ActorEnv env) {
-    super(env);
+  public ExecManager() {
     MongoDatabase db = MongoClients.create("mongodb://localhost:27017").getDatabase("actor-selection");
     pendingExecutions = db.getCollection("test");
     pendingExecutions.drop((r, t) -> System.out.println("dropped collection"));

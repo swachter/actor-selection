@@ -4,13 +4,12 @@ import akka.actor.{ActorRef, ActorSystem, Props}
 import akka.event.Logging
 import akka.testkit.{ImplicitSender, TestKit}
 import com.typesafe.config.Config
-import eu.swdev.akka.test.conf.{InstBackendConf, Environment}
+import eu.swdev.akka.test.conf.{Environment, InstBackendConf}
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
 import org.scalatest.{BeforeAndAfterAll, FunSuiteLike, Suite}
 
 import scala.concurrent.duration._
-import scala.reflect.ClassTag
 
 /**
  * Base class for integrations tests.
@@ -47,20 +46,11 @@ abstract class Base(config: Config) extends TestKit(ActorSystem("test", config))
  *
  * @param config
  */
-abstract class ActorItBase(config: Config) extends Base(config) with ActorEnv {
+abstract class ActorItBase(config: Config) extends Base(config) {
 
   def this(cs: (Config => Config)*) = this(cs.foldLeft(Environment.getConfig)((accu, c) => c(accu)))
 
-  val database = MongoUtil.create(s"mongodb://${conf.mongo.host}:${conf.mongo.port}", getClass.getSimpleName)
-  val selfRegistration: ActorRef = null //actorOf[SelfRegistration]("selfRegistration")
-  val execHandler: ActorRef = actorOf[ExecManager]("execManager")
-  val crActor: ActorRef = null // actorOf[CrOpHandler]("crManager")
-  val vodafoneOpRunner: ActorRef = null // actorOf[VodafoneOpHandler]("vodafoneOpRunner")
-  val httpResponder: ActorRef = null // actorOf[HttpResponder]("httpResponder")
-
-  def actorOf[T <: BaseActor : ClassTag](name: String): ActorRef = {
-    system.actorOf(Props.create(implicitly[ClassTag[T]].runtimeClass, this), name)
-  }
+  val execHandler: ActorRef = system.actorOf(Props[ExecManager], "execManager")
 
 }
 
