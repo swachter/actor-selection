@@ -1,13 +1,8 @@
 package eu.swdev.akka.test
 
-import akka.actor.{Props, ActorSystem}
 import akka.event.Logging
-import akka.testkit.{ImplicitSender, TestKit, TestProbe}
-import com.typesafe.config.ConfigFactory
+import akka.testkit.TestProbe
 import eu.swdev.akka.test.ExecManager.{ContinueMsg, RegisterMsg}
-import org.junit.runner.RunWith
-import org.scalatest.junit.JUnitRunner
-import org.scalatest.{FunSuiteLike, Matchers}
 
 import scala.concurrent.duration._
 
@@ -33,8 +28,6 @@ class ExecManagerIt extends ActorItBase(
 
     log.debug(s"nextActor: ${nextActorRef.path}")
 
-    val execCtx = new CallbackUrl("http://x.y.z")
-
     println("started")
     for (i <- 1 to 1000) {
 
@@ -44,7 +37,7 @@ class ExecManagerIt extends ActorItBase(
       }(ec)
 
       // the execution must have a short timeout value because we will wait for the timeout below
-      execHandler ! new RegisterMsg(nextActorRef, execCtx, 1000)
+      execHandler ! new RegisterMsg(nextActorRef, 1000)
       val execId = expectMsgType[String]
 
       log.debug(s"************ wait for ContinueMsg - execId: $execId")
@@ -53,7 +46,7 @@ class ExecManagerIt extends ActorItBase(
 
       try {
         println(s"i: $i")
-        val continueMsg = nextActor.expectMsgType[ContinueMsg[CallbackUrl, String]](10 seconds)
+        val continueMsg = nextActor.expectMsgType[ContinueMsg[String]](10 seconds)
 
         log.debug("waited for ContinueMsg")
 
@@ -77,4 +70,3 @@ class ExecManagerIt extends ActorItBase(
 
 }
 
-class CallbackUrl(val url: String)

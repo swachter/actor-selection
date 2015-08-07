@@ -41,12 +41,10 @@ public class ExecManager extends BaseActor {
   public static class RegisterMsg<C> {
 
     public final ActorRef next;
-    public final C execCtx;
     public final long timeoutMillis;
 
-    public RegisterMsg(ActorRef next, C execCtx, long timeoutMillis) {
+    public RegisterMsg(ActorRef next, long timeoutMillis) {
       this.next = next;
-      this.execCtx = execCtx;
       this.timeoutMillis = timeoutMillis;
     }
   }
@@ -54,18 +52,15 @@ public class ExecManager extends BaseActor {
   /**
    * Message that is sent to the next actor after the result of an execution is available.
    *
-   * @param <C>
    * @param <T>
    */
-  public static class ContinueMsg<C, T> {
+  public static class ContinueMsg<T> {
 
     public final String execId;
     public final T result;
-    public final C execCtx;
 
-    public ContinueMsg(String execId, C execCtx, T result) {
+    public ContinueMsg(String execId, T result) {
       this.execId = execId;
-      this.execCtx = execCtx;
       this.result = result;
     }
 
@@ -74,7 +69,6 @@ public class ExecManager extends BaseActor {
       return "ContinueMsg{"
           + "execId='" + execId + '\''
           + ", result=" + result
-          + ", execCtx=" + execCtx
           + '}';
     }
   }
@@ -87,8 +81,7 @@ public class ExecManager extends BaseActor {
   //
   // === end protocol ===
   //
-  private static final String EXEC_CTX = "execCtx";
-  private static final String EXEC_CTX_CLASS = "execCtxClass";
+
   private static final String NEXT = "next";
   private static final String VALID_UNTIL = "validUntil";
 
@@ -124,8 +117,6 @@ public class ExecManager extends BaseActor {
 
     // first persist the pending execution
     Document pendingExecution = new Document()
-        .append(EXEC_CTX, MongoUtil.toDoc(msg.execCtx))
-        .append(EXEC_CTX_CLASS, msg.execCtx.getClass().getName())
         .append(NEXT, msg.next.path().toStringWithoutAddress())
         .append("created", new Date())
         .append(VALID_UNTIL, new Date(System.currentTimeMillis() + msg.timeoutMillis));
@@ -172,14 +163,7 @@ public class ExecManager extends BaseActor {
   }
 
   private void tellNext(String execId, Document doc, String result) {
-    Class execCtxClass;
-    try {
-      execCtxClass = Class.forName(doc.getString(EXEC_CTX_CLASS));
-    } catch (ClassNotFoundException e) {
-      throw new RuntimeException(e);
-    }
-    Object execCtx = MongoUtil.fromDoc((Document) doc.get(EXEC_CTX), execCtxClass);
-    ContinueMsg continueMsg = new ContinueMsg(execId, null, result);
+    ContinueMsg continueMsg = new ContinueMsg(execId, result);
     String nextPath = doc.getString(NEXT);
     log.debug("try to resolve next path: " + nextPath);
 
