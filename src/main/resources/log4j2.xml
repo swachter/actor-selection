@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Configuration strict="true">
+
+  <Appenders>
+    <Appender type="CONSOLE" name="stdout">
+      <Layout type="PatternLayout" pattern="[%level] [%X{akkaTimestamp}] [%X{sourceThread}] [%X{akkaSource}] [%c] %m%n"/>
+    </Appender>
+  </Appenders>
+
+  <Loggers>
+    <Logger name="akka" level="info"/>
+    <Logger name="org.mongodb" level="info"/>
+    <Root level="debug">
+      <AppenderRef ref="stdout"/>
+    </Root>
+  </Loggers>
+
+</Configuration>
