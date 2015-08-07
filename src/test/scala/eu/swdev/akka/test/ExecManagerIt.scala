@@ -54,11 +54,10 @@ with ImplicitSender  {
 
       try {
         println(s"i: $i")
-        val continueMsg = nextActor.expectMsgType[ContinueMsg[String]](10 seconds)
+        val continueMsg = nextActor.expectMsgType[ContinueMsg](10 seconds)
 
         log.debug("waited for ContinueMsg")
 
-        assert(continueMsg.result === "timeout")
         assert(execId === continueMsg.execId)
 
       } finally {

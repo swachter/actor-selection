@@ -49,28 +49,14 @@ public class ExecManager extends AbstractActor {
     }
   }
 
-  /**
-   * Message that is sent to the next actor after the result of an execution is available.
-   *
-   * @param <T>
-   */
-  public static class ContinueMsg<T> {
+  public static class ContinueMsg {
 
     public final String execId;
-    public final T result;
 
-    public ContinueMsg(String execId, T result) {
+    public ContinueMsg(String execId) {
       this.execId = execId;
-      this.result = result;
     }
 
-    @Override
-    public String toString() {
-      return "ContinueMsg{"
-          + "execId='" + execId + '\''
-          + ", result=" + result
-          + '}';
-    }
   }
 
   /**
@@ -86,6 +72,8 @@ public class ExecManager extends AbstractActor {
   private static final String VALID_UNTIL = "validUntil";
 
   private final LoggingAdapter log;
+
+
   private final MongoCollection<Document> pendingExecutions;
 
   public ExecManager() {
@@ -164,7 +152,7 @@ public class ExecManager extends AbstractActor {
   }
 
   private void tellNext(String execId, Document doc, String result) {
-    ContinueMsg continueMsg = new ContinueMsg(execId, result);
+    ContinueMsg continueMsg = new ContinueMsg(execId);
     String nextPath = doc.getString(NEXT);
     log.debug("try to resolve next path: " + nextPath);
 
