@@ -27,7 +27,7 @@ import static com.mongodb.client.model.Filters.lt;
  *
  * In addition the ExecManager watches for timed out executions.
  */
-public class ExecManager extends BaseActor {
+public class ExecManager extends AbstractActor {
 
   //
   // === begin protocol ===
@@ -85,9 +85,11 @@ public class ExecManager extends BaseActor {
   private static final String NEXT = "next";
   private static final String VALID_UNTIL = "validUntil";
 
+  private final LoggingAdapter log;
   private final MongoCollection<Document> pendingExecutions;
 
   public ExecManager() {
+    this.log = Logging.getLogger(getContext().system(), this);
     MongoDatabase db = MongoClients.create("mongodb://localhost:27017").getDatabase("actor-selection");
     pendingExecutions = db.getCollection("test");
     pendingExecutions.drop((r, t) -> System.out.println("dropped collection"));

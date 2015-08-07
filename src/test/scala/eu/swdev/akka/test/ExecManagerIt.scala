@@ -20,6 +20,8 @@ with ImplicitSender  {
 
   test("a timed out execution") {
 
+//    val execHandler: ActorRef = system.actorOf(Props[ExecManager], "execManager")
+
     val log = Logging.getLogger(system, "test")
     val ec = system.dispatcher
 
