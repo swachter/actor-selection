@@ -9,7 +9,7 @@
 
   <Loggers>
     <Logger name="akka" level="info"/>
-    <Logger name="org.mongodb" level="info"/>
+    <Logger name="org.mongodb" level="off"/>
     <Root level="debug">
       <AppenderRef ref="stdout"/>
     </Root>

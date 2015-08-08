@@ -15,15 +15,17 @@ import scala.concurrent.duration._
 class ExecManagerIt extends TestKit(ActorSystem("test", ConfigFactory.load())) with FunSuiteLike
 with BeforeAndAfterAll
 with ImplicitSender  {
-
-  val execHandler: ActorRef = system.actorOf(Props[ExecManager], "execManager")
+  
+  //  when the execManager is created here, then the test sporadically fails
+  val execManager: ActorRef = system.actorOf(Props[ExecManager], "execManager")
 
   test("a timed out execution") {
 
-//    val execHandler: ActorRef = system.actorOf(Props[ExecManager], "execManager")
+    // when the execManager is created here then test does not fail
+//    val execManager: ActorRef = system.actorOf(Props[ExecManager], "execManager")
 
     val log = Logging.getLogger(system, "test")
-    val ec = system.dispatcher
+    implicit val ec = system.dispatcher
 
     log.debug(s"############################ test a timed out execution ###")
 
@@ -42,10 +44,10 @@ with ImplicitSender  {
       actorSelection.resolveOne(1 seconds).onComplete {
         case scala.util.Success(r) => log.debug(s"actor selection could be resolved - as: $actorSelection")
         case scala.util.Failure(t) => log.error(t, s"actor selection could not be resolved - as: $actorSelection")
-      }(ec)
+      }
 
       // the execution must have a short timeout value because we will wait for the timeout below
-      execHandler ! new RegisterMsg(nextActorRef, 1000)
+      execManager ! new RegisterMsg(nextActorRef, 1000)
       val execId = expectMsgType[String]
 
       log.debug(s"************ wait for ContinueMsg - execId: $execId")
@@ -65,7 +67,7 @@ with ImplicitSender  {
         as.resolveOne(1 seconds).onComplete {
           case scala.util.Success(r) => log.debug(s"actor selection could be resolved #2 - as: $as")
           case scala.util.Failure(t) => log.error(t, s"actor selection could not be resolved #2 - as: $as")
-        }(ec)
+        }
       }
     }
 
